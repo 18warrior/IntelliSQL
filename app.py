@@ -50,10 +50,15 @@ def page_home():
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<h1 class='main-title'>Welcome to IntelliSQL</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-title'>Welcome to IntelliSQL!</h1>", unsafe_allow_html=True)
     st.markdown("<h2 class='sub-title'>Revolutionizing Database Querying with Advanced LLM Capabilities</h2>", unsafe_allow_html=True)
 
+    # Create side-by-side layout
     col1, col2 = st.columns([1, 1])
+
+    with col1:
+        st.image("https://cdn-icons-png.freepik.com/512/11524/11524329.png", use_container_width=True)
+
     with col2:
         st.markdown("""
         <div class='offerings' style="background-color:#0E1117; padding: 20px; border-radius: 10px;">
@@ -68,6 +73,7 @@ def page_home():
             </ul>
         </div>
         """, unsafe_allow_html=True)
+
 
 # About Page
 def page_about():
