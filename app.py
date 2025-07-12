@@ -3,33 +3,10 @@ import os
 import sqlite3
 import re
 import google.generativeai as genai
-import requests # Import requests
 
-# --- START: Database Downloader ---
-def download_db():
-    # URL to your data.db file from GitHub Releases
-    db_url = "https://github.com/18warrior/IntelliSQL/releases/download/v1.0.0-data/data.db" # PASTE YOUR LINK HERE
-    db_path = "data.db"
 
-     # Check if the database file already exists
-    if not os.path.exists(db_path):
-        st.info("Database not found. Downloading...")
-        try:
-            r = requests.get(db_url, stream=True)
-            r.raise_for_status() # Raise an exception for bad status codes
-            with open(db_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            st.success("Database downloaded successfully!")
-        except Exception as e:
-            st.error(f"Error downloading the database: {e}")
-            st.stop() # Stop the app if the database can't be downloaded
-# --- END: Database Downloader ---
-
-# Set API key from environment
 genai.configure(api_key=os.getenv('API_KEY'))
 
-# Prompt setup (Gemini should return only SQL query)
 prompt = ["""
 You are an expert in converting English questions to SQL queries.
 The SQL database has the name STUDENTS with the following columns - NAME, CLASS, Marks, Company.
@@ -43,13 +20,11 @@ Q: Show names of students with marks above 80.
 A: SELECT NAME FROM STUDENTS WHERE Marks > 80;
 """]
 
-# Get Gemini response
 def get_response(que, prompt):
     model = genai.GenerativeModel("gemini-1.5-flash-latest")
     response = model.generate_content([prompt[0], que])
     return response.text
 
-# Run SQL query
 def read_query(sql, db):
     conn = sqlite3.connect(db)
     cursor = conn.cursor()
@@ -59,7 +34,7 @@ def read_query(sql, db):
     conn.close()
     return rows
 
-# Home Page
+
 def page_home():
     st.markdown("""
     <style>
@@ -111,7 +86,6 @@ def page_about():
     st.markdown("</div>", unsafe_allow_html=True)
     st.image("https://download.logo.wine/logo/Oracle_SQL_Developer/Oracle_SQL_Developer-Logo.wine.png", use_container_width=True)
 
-# Query Assistant Page
 def page_intelligent_query_assistance():
     st.markdown("<h1 style='color: #4CAF50;'>Intelligent Query Assistance</h1>", unsafe_allow_html=True)
     st.write("IntelliSQL enhances the querying process by providing intelligent assistance to users. Whether novice or expert, this tool simplifies SQL access.")
@@ -124,17 +98,14 @@ def page_intelligent_query_assistance():
 
         if submit or que:
             try:
-                # Get Gemini output
                 raw_response = get_response(que, prompt)
 
-                # Extract SQL query (first line starting with SELECT, INSERT etc.)
                 match = re.search(r"(SELECT|INSERT|UPDATE|DELETE).*?;", raw_response, re.IGNORECASE | re.DOTALL)
                 if match:
                     sql_query = match.group(0).strip()
                     st.write("**Generated SQL Query:**")
                     st.code(sql_query, language='sql')
 
-                    # Run query
                     result = read_query(sql_query, "data.db")
                     st.subheader("The Response is:")
                     st.table(result)
@@ -151,10 +122,6 @@ def page_intelligent_query_assistance():
 # Main Controller
 def main():
     st.set_page_config(page_title="IntelliSQL", page_icon="💡", layout="wide")
-    
-    # --- Call the downloader at the start of the app ---
-    download_db()
-
     st.sidebar.title("Navigation")
 
     pages = {
