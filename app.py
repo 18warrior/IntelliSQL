@@ -3,6 +3,28 @@ import os
 import sqlite3
 import re
 import google.generativeai as genai
+import requests # Import requests
+
+# --- START: Database Downloader ---
+def download_db():
+    # URL to your data.db file from GitHub Releases
+    db_url = "https://github.com/18warrior/IntelliSQL/releases/download/v1.0.0-data/data.db" # PASTE YOUR LINK HERE
+    db_path = "data.db"
+
+     # Check if the database file already exists
+    if not os.path.exists(db_path):
+        st.info("Database not found. Downloading...")
+        try:
+            r = requests.get(db_url, stream=True)
+            r.raise_for_status() # Raise an exception for bad status codes
+            with open(db_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            st.success("Database downloaded successfully!")
+        except Exception as e:
+            st.error(f"Error downloading the database: {e}")
+            st.stop() # Stop the app if the database can't be downloaded
+# --- END: Database Downloader ---
 
 # Set API key from environment
 genai.configure(api_key=os.getenv('API_KEY'))
@@ -129,6 +151,10 @@ def page_intelligent_query_assistance():
 # Main Controller
 def main():
     st.set_page_config(page_title="IntelliSQL", page_icon="💡", layout="wide")
+    
+    # --- Call the downloader at the start of the app ---
+    download_db()
+
     st.sidebar.title("Navigation")
 
     pages = {
